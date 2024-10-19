@@ -62,8 +62,15 @@ export const RepositoriesTable = ({
         </TableBody>
         <TableFooter>
           <TableRow>
-            <TableCell colSpan={3}>Total Repositories</TableCell>
-            <TableCell className="text-right">{totalRepos}</TableCell>
+            <TableCell
+              colSpan={3}
+              className="font-sans text-black-300 dark:text-slate-300"
+            >
+              Total Repositories
+            </TableCell>
+            <TableCell className="text-right text-black-300 dark:text-slate-300">
+              {totalRepos}
+            </TableCell>
           </TableRow>
         </TableFooter>
       </Table>
