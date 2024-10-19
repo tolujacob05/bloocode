@@ -1,7 +1,18 @@
+// app/profile/[username]/GitHubUserInfo.tsx
 import Image from "next/image";
 
+export interface GitHubUserData {
+  avatar_url: string;
+  login: string;
+  bio: string;
+  public_repos: string;
+  location: string;
+  followers: string;
+  following: string;
+}
+
 interface GitHubUserInfoProps {
-  userData: any;
+  userData: GitHubUserData;
 }
 
 export const GitHubUserInfo = ({ userData }: GitHubUserInfoProps) => {
@@ -9,32 +20,32 @@ export const GitHubUserInfo = ({ userData }: GitHubUserInfoProps) => {
     <div className="mt-4 text-center flex flex-col items-center justify-center gap-5">
       <div className="flex items-center gap-2">
         <Image
-          src={userData.avatar_url}
-          alt={`${userData.login}'s avatar`}
+          src={userData?.avatar_url}
+          alt={`${userData?.login}'s avatar`}
           className="rounded-full mx-auto"
           width={50}
           height={50}
         />
         <h2 className="text-xl font-bold text-black-300 font-sans dark:text-white">
-          {userData.login}
+          {userData?.login}
         </h2>
       </div>
 
       <ul className="flex flex-col items-center justify-center gap-2">
         <li className="text-black-300 font-sans dark:text-white w-[80%]">
-          {userData.bio}
+          {userData?.bio}
         </li>
         <li className="text-black-300 font-sans dark:text-white">
-          Repositories: {userData.public_repos}
+          Repositories: {userData?.public_repos}
         </li>
         <li className="text-black-300 font-sans dark:text-white">
-          Location: {userData.location}
+          Location: {userData?.location}
         </li>
         <li className="text-black-300 font-sans dark:text-white">
-          Followers: {userData.followers}
+          Followers: {userData?.followers}
         </li>
         <li className="text-black-300 font-sans dark:text-white">
-          Following: {userData.following}
+          Following: {userData?.following}
         </li>
       </ul>
     </div>
