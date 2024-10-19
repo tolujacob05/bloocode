@@ -31,9 +31,6 @@ export default function Home() {
     setLoading(true); // Start loading
     const token = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
 
-    console.log(token);
-    console.log(process.env);
-
     if (!token) {
       setError("GitHub token is not set."); // Handle the case where the token is missing
       return;
