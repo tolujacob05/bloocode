@@ -6,14 +6,24 @@ import Spinner from "@/components/Spinner";
 import { motion } from "framer-motion";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 import { SearchForm } from "@/components/search";
-import { GitHubUserInfo } from "@/components/userInfo";
 import { RepositoriesTable } from "@/components/repo";
 import { PaginationComponent } from "@/components/pagination";
 import ThemeSwitcher from "@/components/theme";
+import { GitHubUserInfo } from "./profile/[username]/userInfo";
+
+interface GitHubUserInfoProps {
+  avatar_url: string;
+  login: string;
+  bio: string;
+  public_repos: string;
+  location: string;
+  followers: string;
+  following: string;
+}
 
 export default function Home() {
   const [username, setUsername] = useState("");
-  const [userData, setUserData] = useState<any | null>(null);
+  const [userData, setUserData] = useState<GitHubUserInfoProps | null>(null);
   const [reposData, setReposData] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -22,43 +32,51 @@ export default function Home() {
 
   const fetchGitHubUser = async () => {
     if (!username) {
-      setError("Please enter a GitHub username."); // Set error if input is empty
+      setError("Please enter a GitHub username.");
       setUserData(null);
       setReposData([]);
       return;
     }
 
-    setLoading(true); // Start loading
+    setLoading(true);
     const token = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
 
     if (!token) {
-      setError("GitHub token is not set."); // Handle the case where the token is missing
+      setError("GitHub token is not set.");
       return;
     }
 
     try {
-      // Fetch the user profile
       const userResponse = await axios.get(
         `https://api.github.com/users/${username}`,
         {
-          headers: {
-            Authorization: `token ${token}`,
-          },
+          headers: { Authorization: `token ${token}` },
         }
       );
 
-      setUserData(userResponse.data);
-      setError(null); // Clear any previous errors
+      // Handle rate limit <--- get rate limit headers from GitHub api rate limit headers
+      const rateLimitRemaining = userResponse.headers["x-ratelimit-remaining"];
+      const rateLimitReset = userResponse.headers["x-ratelimit-reset"];
 
-      // Fetch the user's repositories with pagination
-      await fetchAllRepositories(username, token); // Fetch repositories
+      if (rateLimitRemaining === "0") {
+        const resetTime = rateLimitReset * 1000; // Convert to milliseconds
+        const timeUntilReset = new Date(resetTime).toLocaleTimeString();
+
+        setError(`Rate limit exceeded. Try again after ${timeUntilReset}.`);
+        return;
+      }
+
+      setUserData(userResponse.data);
+      setError(null);
+
+      await fetchAllRepositories(username, token);
     } catch (err) {
       console.log(err);
       setError("Wrong username or user does not exist.");
-      setUserData(null); // Clear previous data if error occurs
-      setReposData([]); // Clear repos data on error
+      setUserData(null);
+      setReposData([]);
     } finally {
-      setLoading(false); // End loading
+      setLoading(false);
     }
   };
 
@@ -109,6 +127,14 @@ export default function Home() {
     setCurrentPage(page);
   };
 
+  const handleBackClick = () => {
+    setUserData(null); // Reset user data to show search form again
+    setUsername(""); // Optionally reset the username input
+    setReposData([]); // Clear repos data if desired
+    setError(null); // Clear error message if any
+    setCurrentPage(1); // Reset pagination if needed
+  };
+
   // Get current repos for the page
   const indexOfLastRepo = currentPage * reposPerPage;
   const indexOfFirstRepo = indexOfLastRepo - reposPerPage;
@@ -146,7 +172,17 @@ export default function Home() {
               </div>
             )}
 
-            {userData && <GitHubUserInfo userData={userData} />}
+            {userData && (
+              <>
+                <GitHubUserInfo userData={userData} />
+                <button
+                  onClick={handleBackClick}
+                  className="font-sans mt-4 p-2 bg-blue-500 text-white rounded"
+                >
+                  Back to Search
+                </button>
+              </>
+            )}
 
             {reposData.length > 0 && (
               <div className="mt-4 w-full overflow-auto max-w-full">
