@@ -18,7 +18,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const reposPerPage = 10; // Set repos per page
+  const reposPerPage = 10;
 
   const fetchGitHubUser = async () => {
     if (!username) {
@@ -29,7 +29,15 @@ export default function Home() {
     }
 
     setLoading(true); // Start loading
-    const token = "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";
+    const token = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
+
+    console.log(token);
+    console.log(process.env);
+
+    if (!token) {
+      setError("GitHub token is not set."); // Handle the case where the token is missing
+      return;
+    }
 
     try {
       // Fetch the user profile
@@ -42,7 +50,7 @@ export default function Home() {
         }
       );
 
-      setUserData(userResponse.data); // Set user data
+      setUserData(userResponse.data);
       setError(null); // Clear any previous errors
 
       // Fetch the user's repositories with pagination
